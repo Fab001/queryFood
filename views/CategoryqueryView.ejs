@@ -1,0 +1,402 @@
+<div  class= "container-fluid">
+
+  <div style="font-size: 40px; text-align: center">Ricerche nel mondo 🌎</div>
+  <div style="font-size: 20px; text-align: center">
+    ~ Cerca piatti selezionando più categorie di ingredienti ~
+  </div>
+ <!--
+  <div class = "listIngredient">
+    <script>
+      function selected(){
+        var item = document.getElementsByClassName("imgIngredient");
+      }
+    </script>
+    <img onclick="selected()" src="ingredientsImg/spezie.jpg" class = "imgIngredient" alt="spezie">
+    <img onclick="selected()" src="ingredientsImg/cereali.jpg" class = "imgIngredient" alt="cereali">
+    <img onclick="selected()" src="ingredientsImg/fruit.jpg" class = "imgIngredient"  alt="fruit">
+    <img onclick="selected()" src="ingredientsImg/vegetables.jpg" class = "imgIngredient" alt="vegetables">
+    <img onclick="selected()" src="ingredientsImg/meat.jpg" class = "imgIngredient" alt="meat">
+    <img onclick="selected()" src="ingredientsImg/fish.jpg" class = "imgIngredient" alt="fish">
+    <img onclick="selected()" src="ingredientsImg/bakery.jpg" class = "imgIngredient" alt="bakery">
+    <img onclick="selected()" src="ingredientsImg/alcolici.jpg" class = "imgIngredient" alt="alcolici">
+    <img onclick="selected()" src="ingredientsImg/latticini.jpg" class = "imgIngredient" alt="latticini">
+  </div>
+-->
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/simplePagination.min.css">
+<script>
+    //$(".wrapper .item").slice(4).hide();
+</script>
+
+<div class="top-content" id="tmpCat">
+  <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel" data-bs-interval="false">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+           <script>
+
+
+
+             var categoryState={
+               Spice: false,
+               Bakery:false,
+               Plant:false,
+               Meat:false,
+               Fruit:false,
+               Vegetable:false,
+               Beverage:false,
+               "Nuts & Seed":false,
+               Fish:false,
+               Legume:false,
+               Dairy:false,
+               Herb:false,
+               Cereal:false,
+               Seafood:false,
+               "Essential Oil" :false,
+               Fungus:false,
+               Additive:false,
+               "Beverage Alcoholic":false,
+               Flower:false,
+               Maize:false,
+            };
+
+            let stato = 0;
+
+
+
+            function selected(e){
+
+              var element = document.getElementById(e.target.id);
+
+              if(categoryState[e.target.alt]==false)
+                element.classList.add("selected");
+              else element.classList.remove("selected");
+
+              var categorySelected = [];
+
+              if(categoryState[e.target.alt])
+              {
+                categoryState[e.target.alt] = false;
+                stato -= 1
+              }
+              else
+              {
+                categoryState[e.target.alt] = true;
+                stato += 1
+
+              }
+
+              for(var k in categoryState)
+                 if(categoryState[k]){
+
+                    categorySelected.push(k)
+                 }
+
+              console.log(categorySelected)
+              let numberItemsInPage = 8
+
+
+               var elementsTitles = document.getElementsByClassName("piattoCategoryItem");
+                            var elementsDescriptions = document.getElementsByClassName("RecipeContentCat");
+                            var elementsImage = document.getElementsByClassName("imgInItem4");
+                            let j
+                            console.log(elementsTitles.length)
+                            for( j = 0; j < elementsTitles.length ; j+= 1 )
+                            {
+                              elementsTitles[j].style.display = 'none'
+                            }
+
+
+              document.getElementById("cagoriesnavbar").style.display = 'none'
+              //$('#containercategoryitem').removeAttr('hidden');
+              document.getElementById('containercategoryitem').style.display = 'flex'
+              document.getElementById("cagoriesnotfound").style.display = 'none'
+
+              console.log("................", stato)
+              $.ajax({
+                  url: '/findRecipeByCategory',
+                  type: 'POST',
+                  cache: false,
+                  dataType: 'json',
+                  data: { categories:  JSON.stringify(categorySelected)},
+                  success: function (result) {
+                       if(result.status == 200){
+                          console.log("OK");
+                       }
+
+                       if(result.ricette.length > 0)
+                       {
+
+
+                        let tmp = document.createElement('div')
+                        tmp.id = "paginationCategory"
+                        console.log(tmp, document.getElementById("tmp"));
+                        document.getElementById("cagoriesnavbar").appendChild(tmp)
+                        $('#paginationCategory').pagination({
+                        // Total number of items present
+                        // in wrapper class
+
+                        items : result.ricette.length,
+                        itemsOnPage: numberItemsInPage,
+                        displayedPages : 10,
+                        edges : 1,
+                        // Items allowed on a single page
+
+                        cssStyle: 'compact-theme',
+                        onPageClick: function (pageNuber) {
+                                                            var k = (parseInt(pageNuber) - 1 ) * numberItemsInPage;
+                                                            console.log("click su " , pageNuber)
+                                                            $.ajax({
+                                                                    url: '/findRecipeByCategory',
+                                                                    type: 'POST',
+                                                                    cache: false,
+                                                                    dataType: 'json',
+                                                                    data: { categories:  JSON.stringify(categorySelected) , from: k, to: numberItemsInPage },
+                                                                    success: function (result) {
+                                                                                                  console.log(result);
+
+                                                                                                  var elements = document.getElementsByClassName("TitleRecipeCat");
+                                                                                                  var elementsD = document.getElementsByClassName("RecipeContentCat");
+                                                                                                  var item = document.getElementsByClassName("piattoCategoryItem");
+                                                                                                  let elementsImagePAGE = document.getElementsByClassName("imgInItemCateg");
+
+                                                                                                  let i = 0
+                                                                                                  let z = 0;
+                                                                                                  for( i = 0; i < result.ricette.length - 1; i = i+1 , k+=1)
+                                                                                                  {
+
+
+                                                                                                    const settings = {
+                                                                                                      	"async": true,
+                                                                                                     	"crossDomain": true,
+                                                                                                     	"url": "https://bing-image-search1.p.rapidapi.com/images/search?q="+result.ricette[i].name,
+                                                                                                     	"method": "GET",
+                                                                                                      	"headers": {
+                                                                                                      		"x-rapidapi-key": "", // INSERIRE UNA KEY VALIDA
+                                                                                                      		"x-rapidapi-host": "bing-image-search1.p.rapidapi.com"
+                                                                                                      	}
+                                                                                                   };
+                                                                                                   setTimeout(function () {
+                                                                                                     $.ajax(settings).done(function (response) {
+                                                                                                       console.log("get immagine paginator...","indice:", z, "l'item:", elementsImagePAGE[z]);
+                                                                                                       console.log(response.value[0].contentUrl);
+                                                                                                      elementsImagePAGE[z].src = response.value[0].contentUrl;
+                                                                                                       z+=1 ;
+                                                                                                     });
+                                                                                                   }, 1000*z);
+
+
+
+
+                                                                                                    //console.log(elements[i]);
+                                                                                                    elements[i].innerHTML = result.ricette[i].name;
+                                                                                                    let strtmp = ""
+                                                                                                    for(let j = 0; j < result.ricette[i].ingredients.length; j++)
+                                                                                                    {
+                                                                                                      strtmp+= " · " + result.ricette[i].ingredients[j].ingredient_name.toString()
+                                                                                                    }
+
+
+
+
+                                                                                                    //elementsD[i].innerHTML = result.ricette[i].ingredients[0].ingredient_name.toString();
+                                                                                                    elementsD[i].innerHTML = strtmp
+                                                                                                    item[i].style.display = 'flex'
+
+
+
+                                                                                                  }
+                                                                                                  while(i < item.length)
+                                                                                                  {
+
+                                                                                                    item[i].style.display = 'none';
+                                                                                                    i+= 1;
+                                                                                                  }
+
+                                                                                                } , error : function(result){ console.log("errore " , result)}
+                                                                })
+                        }
+                        , onInit : function (pageNuber){ console.log("ho caricato la paginazione : " , pageNuber) }
+                        });
+
+                        document.getElementById("cagoriesnavbar").style.display = 'block'
+                        document.getElementById('paginationCategory').style.display = 'block'
+
+                      }
+                      else
+                      {
+
+                        // da finire -> definire meglio layuot e hidden tag
+                        if( (stato > 0) && (result.ricette.length <= 0) )
+                          {
+                            // //alert("nessuna ricetta trovata")
+                            // let tmp = document.createElement('div')
+                            // tmp.innerHTML ="ndfskjaskfjdaslkfjskaj"
+
+                            // var elementsTitles = document.getElementsByClassName("piattoCategoryItem");
+                            // var elementsDescriptions = document.getElementsByClassName("RecipeContentCat");
+                            // var elementsImage = document.getElementsByClassName("imgInItem4");
+                            // let j
+                            // console.log(elementsTitles.length)
+                            // for( j = 0; j < elementsTitles.length ; j+= 1 )
+                            // {
+                            //   elementsTitles[j].style.display = 'none'
+                            // }
+                            // document.getElementById("cagoriesnotfound").style.display = 'flex'
+                            // $('#paginator').prop("hidden", true);
+                            document.getElementById('containercategoryitem').style.display = 'none'
+                            document.getElementById("cagoriesnotfound").style.display = 'block'
+
+                          }
+                        else
+                        {
+                                                      // //alert("nessuna ricetta trovata")
+                            // let tmp = document.createElement('div')
+                            // tmp.innerHTML ="ndfskjaskfjdaslkfjskaj"
+
+                            // var elementsTitles = document.getElementsByClassName("piattoCategoryItem");
+                            // var elementsDescriptions = document.getElementsByClassName("RecipeContentCat");
+                            // var elementsImage = document.getElementsByClassName("imgInItem4");
+                            // let j
+                            // console.log(elementsTitles.length)
+                            // for( j = 0; j < elementsTitles.length ; j+= 1 )
+                            // {
+                            //   elementsTitles[j].style.display = 'none'
+                            // }
+                            // document.getElementById("cagoriesnotfound").style.display = 'flex'
+                            // $('#paginator').prop("hidden", true);
+                          document.getElementById('containercategoryitem').style.display = 'none'
+                          document.getElementById('paginationCategory').style.display = 'none'
+                          console.log(".jkljlkjlkj" , stato)
+
+
+                        }
+
+
+
+                      }
+
+
+                       //console.log("------" , result)
+
+                       var items = document.getElementsByClassName("piattoCategoryItem");
+                       var elementsTitles = document.getElementsByClassName("TitleRecipeCat");
+                       var elementsDescriptions = document.getElementsByClassName("RecipeContentCat");
+                       var elementsImage = document.getElementsByClassName("imgInItemCateg");
+
+                       for(let i = 0; i < result.ricette.length ; i = i+ 1){
+                          items[i].style.display = 'flex'
+                           if(elementsTitles[i])
+                              elementsTitles[i].innerHTML = result.ricette[i].name;
+                              //console.log(result.ricette[i].name);
+                              //API per immagini ricetta
+                              //API per immagini ricetta
+                           const settings = {
+                             	"async": true,
+                            	"crossDomain": true,
+                            	"url": "https://bing-image-search1.p.rapidapi.com/images/search?q="+result.ricette[i].name,
+                            	"method": "GET",
+                             	"headers": {
+                             		"x-rapidapi-key": "", // INSERIRE UNA KEY VALIDA
+                             		"x-rapidapi-host": "bing-image-search1.p.rapidapi.com"
+                             	}
+                          };
+
+
+                          setTimeout(function () {
+                            $.ajax(settings).done(function (response) {
+                              console.log("get immagine ...");
+                              console.log(response.value[0].contentUrl);
+                             elementsImage[i].src = response.value[0].contentUrl;
+                            });
+                          }, 1000*i);
+
+                          elementsDescriptions[i].innerHTML = "";
+
+                          for(let j = 0; j < result.ricette[i].ingredients.length; j = j+ 1)
+                               elementsDescriptions[i].innerHTML  = elementsDescriptions[i].innerHTML + " · " +
+                                result.ricette[i].ingredients[j].ingredient_name;
+                       }
+
+                   }
+                  , error: function(result){
+                       console.log(result);
+                   }
+               });
+            }
+
+            </script>
+             <script>
+
+
+             </script>
+
+        <div class = "listIngredient">
+        <img onclick="selected(event)" src="ingredientsImg/spezie.jpg" class = "imgIngredient" alt="Spice" id="id1" >
+        <img onclick="selected(event)" src="ingredientsImg/cereali.jpg" class = "imgIngredient" alt="Cereal" id="id2">
+        <img onclick="selected(event)" src="ingredientsImg/fruit.jpg" class = "imgIngredient"  alt="Fruit" id="id3">
+        <img onclick="selected(event)" src="ingredientsImg/vegetables.jpg" class = "imgIngredient" alt="Vegetable" id="id4">
+        <img onclick="selected(event)" src="ingredientsImg/meat.jpg" class = "imgIngredient" alt="Meat" id="id5">
+        <img onclick="selected(event)" src="ingredientsImg/fish.jpg" class = "imgIngredient" alt="Fish" id="id6">
+        <img onclick="selected(event)" src="ingredientsImg/bakery.jpg" class = "imgIngredient" alt="Bakery" id="id7">
+      </div>
+      </div>
+      <div class="carousel-item">
+        <div class = "listIngredient">
+        <img onclick="selected(event)" src="ingredientsImg/alcolici.jpg" class = "imgIngredient" alt="Beverage Alcoholic" id="id8">
+        <img onclick="selected(event)" src="ingredientsImg/latticini.jpg" class = "imgIngredient" alt="Dairy" id="id9">
+        <img onclick="selected(event)" src="ingredientsImg/additive.jpg" class = "imgIngredient"  alt="Additive" id="id10">
+        <img onclick="selected(event)" src="ingredientsImg/fungus.jpg" class = "imgIngredient" alt="Fungus" id="id11">
+        <img onclick="selected(event)" src="ingredientsImg/legume.jpg" class = "imgIngredient" alt="Legume" id="id12">
+        <img onclick="selected(event)" src="ingredientsImg/maize.jpg" class = "imgIngredient" alt="Maize" id="id13">
+        <img onclick="selected(event)" src="ingredientsImg/seafood.jpg" class = "imgIngredient" alt="Seafood" id="id14">
+      </div>
+      </div>
+      <div class="carousel-item">
+        <div class = "listIngredient">
+          <img onclick="selected(event)" src="ingredientsImg/beverage.jpg" class = "imgIngredient" alt="Beverage" id="id15">
+          <img onclick="selected(event)" src="ingredientsImg/nutsAndSeed.jpg" class = "imgIngredient" alt="Nuts & Seed" id="id16">
+          <img onclick="selected(event)" src="ingredientsImg/essentialOil.jpg" class = "imgIngredient"  alt="Essential Oil" id="id17">
+          <img onclick="selected(event)" src="ingredientsImg/flowers.jpg" class = "imgIngredient" alt="Flower" id="id18">
+          <img onclick="selected(event)" src="ingredientsImg/herb.jpg" class = "imgIngredient" alt="Herb" id="id19">
+          <img onclick="selected(event)" src="ingredientsImg/plant.jpg" class = "imgIngredient" alt="Plant" id="id20">
+        </div>
+      </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+</div>
+
+<div style="font-size: 20px; text-align: center; margin: 10px;" id= "resultQueryCat" hidden >
+  Risultati trovati: --
+</div>
+
+    <div style = "display: none; justify-content: space-around;  flex-direction: row; " id = "containercategoryitem">
+      <%- include('items/piattoCategoryItem');-%>
+      <%- include('items/piattoCategoryItem');-%>
+      <%- include('items/piattoCategoryItem');-%>
+      <%- include('items/piattoCategoryItem');-%>
+      <%- include('items/piattoCategoryItem');-%>
+      <%- include('items/piattoCategoryItem');-%>
+      <%- include('items/piattoCategoryItem');-%>
+      <%- include('items/piattoCategoryItem');-%>
+    </div>
+
+
+    <!-- cambio pagina -->
+    <nav style="display: none; text-align: center ;" aria-label="Page navigation example" id="cagoriesnotfound" > nessuna ricetta trovata con queste categorie </nav>
+    <div style="padding: 2%;" aria-label="Page navigation example" id="cagoriesnavbar" ></div>
+
+
+
+
+
+</div>
